@@ -6,6 +6,7 @@ using ASp.netCore_empty_tutorial.ViewModels;
 using Microsoft.Extensions.Hosting;
 using System.IO;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace ASp.netCore_empty_tutorial.Controllers
 {
@@ -14,11 +15,14 @@ namespace ASp.netCore_empty_tutorial.Controllers
     {
         private readonly IEmployeeRepository _employeeRepository;
         private readonly IHostEnvironment _hostEnvironment;
+        private readonly ILogger logger;
 
-        public HomeController(IEmployeeRepository employeeRepository, IHostEnvironment hostEnvironment)
+        public HomeController(IEmployeeRepository employeeRepository, IHostEnvironment hostEnvironment, ILogger<HomeController> logger)
         {
+
             _employeeRepository = employeeRepository;
             this._hostEnvironment = hostEnvironment;
+            this.logger = logger;
         }
 
         public ViewResult Index()
@@ -29,6 +33,13 @@ namespace ASp.netCore_empty_tutorial.Controllers
 
         public ViewResult Details(int? id)
         {
+            //Logging information
+            logger.LogTrace("Log Trace");
+            logger.LogDebug("Log Debug");
+            logger.LogInformation("Log Information");
+            logger.LogWarning("Log Warning");
+            logger.LogError("Log Error");
+            logger.LogCritical("Log Critical");
 
             Employee detailsById = _employeeRepository.GetEmployeeById(id.Value);
 
