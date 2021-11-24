@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 using ASp.netCore_empty_tutorial.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Identity;
 
 namespace ASp.netCore_empty_tutorial
 {
@@ -27,6 +28,8 @@ namespace ASp.netCore_empty_tutorial
                 options.UseSqlServer(_config.GetConnectionString("EmployeeConnectionStrings"));
             });
 
+            services.AddIdentity<IdentityUser, IdentityRole>()
+            .AddEntityFrameworkStores<AppDbContext>();
             services.AddMvc(options => options.EnableEndpointRouting = false);
             services.AddScoped<IEmployeeRepository, SQLEmployeeRepository>();
 
@@ -48,6 +51,8 @@ namespace ASp.netCore_empty_tutorial
 
             app.UseStaticFiles();
             // app.UseMvcWithDefaultRoute();
+            //add Authentication middleware
+            app.UseAuthentication();
             app.UseMvc(route =>
             {
                 route.MapRoute("default", "{controller=Home}/{action=Index}/{id?}");
