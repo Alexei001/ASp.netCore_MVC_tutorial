@@ -7,10 +7,11 @@ using Microsoft.Extensions.Hosting;
 using System.IO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ASp.netCore_empty_tutorial.Controllers
 {
-
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly IEmployeeRepository _employeeRepository;
@@ -24,13 +25,13 @@ namespace ASp.netCore_empty_tutorial.Controllers
             this._hostEnvironment = hostEnvironment;
             this.logger = logger;
         }
-
+        [AllowAnonymous]
         public ViewResult Index()
         {
             IEnumerable<Employee> allData = _employeeRepository.GetEmployees();
             return View(allData);
         }
-
+        [AllowAnonymous]
         public ViewResult Details(int? id)
         {
             //Logging information
@@ -51,12 +52,33 @@ namespace ASp.netCore_empty_tutorial.Controllers
             return View(detailsById);
         }
         [HttpGet]
+
         public ViewResult Create()
         {
             return View();
         }
+        [HttpPost]
 
+        public IActionResult Create(EmployeeCreateViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                string uniqueFileName = UpladFileMethod(model);
+
+                var newEmployee = new Employee()
+                {
+                    Name = model.Name,
+                    Department = model.Department,
+                    Email = model.Email,
+                    ImagePath = uniqueFileName
+                };
+                _employeeRepository.Create(newEmployee);
+                return RedirectToAction("Details", new { id = newEmployee.Id });
+            }
+            return View();
+        }
         [HttpGet]
+
         public ViewResult Edit(int id)
         {
             Employee employee = _employeeRepository.GetEmployeeById(id);
@@ -73,6 +95,7 @@ namespace ASp.netCore_empty_tutorial.Controllers
             return View(employeeEditViewModel);
         }
         [HttpPost]
+
         public IActionResult Edit(EmployeeEditViewModel model)
         {
             if (ModelState.IsValid)
@@ -97,25 +120,7 @@ namespace ASp.netCore_empty_tutorial.Controllers
             return View();
         }
 
-        [HttpPost]
-        public IActionResult Create(EmployeeCreateViewModel model)
-        {
-            if (ModelState.IsValid)
-            {
-                string uniqueFileName = UpladFileMethod(model);
 
-                var newEmployee = new Employee()
-                {
-                    Name = model.Name,
-                    Department = model.Department,
-                    Email = model.Email,
-                    ImagePath = uniqueFileName
-                };
-                _employeeRepository.Create(newEmployee);
-                return RedirectToAction("Details", new { id = newEmployee.Id });
-            }
-            return View();
-        }
 
         private string UpladFileMethod(EmployeeCreateViewModel model)
         {

@@ -27,9 +27,16 @@ namespace ASp.netCore_empty_tutorial
             {
                 options.UseSqlServer(_config.GetConnectionString("EmployeeConnectionStrings"));
             });
+            //add identity .net_core 
+            services.AddIdentity<IdentityUser, IdentityRole>(options =>
+            {
+                //configure password input points
+                options.Password.RequiredLength = 10;
+                options.Password.RequiredUniqueChars = 3;
 
-            services.AddIdentity<IdentityUser, IdentityRole>()
-            .AddEntityFrameworkStores<AppDbContext>();
+            }).AddEntityFrameworkStores<AppDbContext>();
+
+
             services.AddMvc(options => options.EnableEndpointRouting = false);
             services.AddScoped<IEmployeeRepository, SQLEmployeeRepository>();
 
@@ -45,13 +52,13 @@ namespace ASp.netCore_empty_tutorial
             }
             else
             {
-                app.UseExceptionHandler("/Error");
-                app.UseStatusCodePagesWithReExecute("/Error/{0}");
+               // app.UseExceptionHandler("/Error");
+               // app.UseStatusCodePagesWithReExecute("/Error/{0}");
             }
 
             app.UseStaticFiles();
-            // app.UseMvcWithDefaultRoute();
-            //add Authentication middleware
+
+
             app.UseAuthentication();
             app.UseMvc(route =>
             {

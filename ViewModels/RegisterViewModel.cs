@@ -9,7 +9,7 @@ namespace ASp.netCore_empty_tutorial.ViewModels
     public class RegisterViewModel
     {
         [Required]
-        [EmailAddress]
+        [RegularExpression(@"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}", ErrorMessage = "Invalid Email Adress")]
         public string Email { get; set; }
 
         [Required]

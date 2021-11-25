@@ -1,0 +1,14 @@
+﻿body {
+ 
+}
+
+.navbar-expand-sm .navbar-nav {
+    flex-direction: unset;
+    width: 100%;
+}
+
+div .account_container form  {
+    max-width: 500px;
+    height: auto;
+    text-align: center;
+}
