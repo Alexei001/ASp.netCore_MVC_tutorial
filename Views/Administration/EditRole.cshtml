@@ -1,0 +1,57 @@
+﻿@model EditRoleAdministrationViewModel;
+
+@{
+    ViewBag.Title = "Edit Role";
+}
+
+<div class="bg-light border border-primary" style="border-radius:10px;margin-bottom:10px;padding:10px;">
+    <h2 class="text-primary">Edit Role</h2>
+    <form method="post" asp-controller="Administration" asp-action="EditRole">
+
+
+        <fieldset disabled>
+            <div class="mb-3">
+
+                <input asp-for="Id" class="form-control" placeholder="Id:+@Model.Id">
+            </div>
+        </fieldset>
+
+
+        <div class="mb-3 ">
+            <label asp-for="Name" class="form-label"></label>
+            <input asp-for="Name" type="text" class="form-control" value="@Model.Name">
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+
+        <div asp-validation-summary="All" class="text-danger"></div>
+        <a asp-controller="Administration" asp-action="GetRoles" class="btn btn-outline-danger fw-bold">
+            <i class="bi bi-arrow-left"></i>
+        Back</a>
+        <button type="submit" class="btn btn-outline-primary fw-bold">
+            <i class="bi bi-save "></i>
+        Save</button>        
+    </form>
+</div>
+
+<div class="card border border-primary" style="border-radius:10px;">
+    <h5 class="card-header">Users</h5>
+    <div class="card-body">
+        @if (Model.Users.Any())
+        {
+            foreach (var user in Model.Users)
+            {
+                <h5 class="card-title">@user</h5>
+
+            }
+
+        }
+        else
+        {
+            <h5 class="card-title">No Users</h5>
+
+        }
+        <a asp-controller="Administration" asp-action="AddInRoleUser" asp-route-roleId="@Model.Id" class="btn btn-outline-primary fw-bold">
+            <i class="bi bi-plus-square-fill "></i>
+        Change user list</a>
+    </div>
+</div>

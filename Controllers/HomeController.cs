@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace ASp.netCore_empty_tutorial.Controllers
 {
-    [Authorize]
+    
     public class HomeController : Controller
     {
         private readonly IEmployeeRepository _employeeRepository;
@@ -25,12 +25,14 @@ namespace ASp.netCore_empty_tutorial.Controllers
             this._hostEnvironment = hostEnvironment;
             this.logger = logger;
         }
+
         [AllowAnonymous]
         public ViewResult Index()
         {
             IEnumerable<Employee> allData = _employeeRepository.GetEmployees();
             return View(allData);
         }
+
         [AllowAnonymous]
         public ViewResult Details(int? id)
         {

@@ -1,0 +1,84 @@
+﻿@model IEnumerable<ApplicationUser>
+
+
+@{
+    ViewBag.Title = "All Users";
+}
+<h2 class="text-primary">All users</h2>
+@if (Model.Any())
+{<a asp-controller="Account" asp-action="Register" class="btn btn-outline-primary fw-bold" style="margin-bottom:5px;">
+        <i class="bi bi-plus-square-fill "></i>
+        New User
+    </a>
+    foreach (ApplicationUser user in Model)
+    {
+        <div class="card border-primary" style="margin-bottom:5px;border-radius:10px;">
+            <h5 class="card-header">Id: @user.Id</h5>
+            <div class="card-body">
+                <h6 class="card-title">Name: @user.UserName</h6>
+                <p class="card-text">Email: @user.Email</p>
+                <p class="card-text">City: @user.City</p>
+                <form asp-action="DeleteUser" asp-controller="Administration" asp-route-Id="@user.Id" method="post">
+                    <a asp-controller="Administration" asp-action="EditUser" asp-route-Id="@user.Id" class="btn btn-outline-primary fw-bold">
+                        <i class="bi bi-pencil-square"></i>
+                        Edit
+                    </a>
+
+                    <span id="deleteButtonSpan_@user.Id">
+                        <a onclick="deleteConfirmation('@user.Id', true)" class="btn btn-outline-danger fw-bold">
+                            <i class="bi bi-x-square-fill"></i>
+                            Delete
+                        </a>
+                    </span>
+
+
+                    <span id="deleteConfirmationSpan_@user.Id"
+                          style="display:none">
+                        Are you sure you whant to delete?
+                        <button class="btn btn-outline-danger fw-bold"
+                                type="submit" >
+                            Yes
+                        </button>
+                        <a  onclick="deleteConfirmation('@user.Id',false)" class="btn btn-outline-primary">No</a>
+                    </span>
+
+
+                </form>
+            </div>
+        </div>
+    }
+
+}
+else
+{<a href="#" class="btn btn-outline-primary fw-bold">
+        <i class="bi bi-plus-square-fill "></i>
+        New User
+    </a>
+    <div class="card border-primary" style="margin-bottom:5px;border-radius:10px;">
+        <h5 class="card-header">No users</h5>
+        <div class="card-body">
+            <h5 class="card-title"></h5>
+            <p class="card-text">Got to add user</p>
+
+        </div>
+    </div>
+}
+<script>
+    @*function deleteConfirmation(userId, isDeletedConfirm) {
+        var deleteSpanId = 'deleteButtonSpan_' + userId;
+        var confirmationSpanId = 'deleteConfirmationSpan_' + userId;
+        if (isDeletedConfirm) {
+            document.getElementById(deleteSpanId).style.display = "none";
+            document.getElementById(confirmationSpanId).style.display = "inline";
+
+        } else {
+            document.getElementById(deleteSpanId).style.display = "inline";
+            document.getElementById(confirmationSpanId).style.display = "none";
+        }
+    }*@
+
+</script>
+
+@section Script{
+    <script src="~/js/CustomScript.js"></script>
+};

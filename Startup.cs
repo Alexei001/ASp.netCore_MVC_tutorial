@@ -7,6 +7,8 @@ using ASp.netCore_empty_tutorial.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
 
 namespace ASp.netCore_empty_tutorial
 {
@@ -28,7 +30,7 @@ namespace ASp.netCore_empty_tutorial
                 options.UseSqlServer(_config.GetConnectionString("EmployeeConnectionStrings"));
             });
             //add identity .net_core 
-            services.AddIdentity<IdentityUser, IdentityRole>(options =>
+            services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
                 //configure password input points
                 options.Password.RequiredLength = 10;
@@ -37,7 +39,14 @@ namespace ASp.netCore_empty_tutorial
             }).AddEntityFrameworkStores<AppDbContext>();
 
 
-            services.AddMvc(options => options.EnableEndpointRouting = false);
+            services.AddMvc(options =>
+            {
+                options.EnableEndpointRouting = false;
+                var policy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+                options.Filters.Add(new AuthorizeFilter(policy));
+            }).AddXmlSerializerFormatters();
             services.AddScoped<IEmployeeRepository, SQLEmployeeRepository>();
 
         }
@@ -52,8 +61,8 @@ namespace ASp.netCore_empty_tutorial
             }
             else
             {
-               // app.UseExceptionHandler("/Error");
-               // app.UseStatusCodePagesWithReExecute("/Error/{0}");
+                // app.UseExceptionHandler("/Error");
+                // app.UseStatusCodePagesWithReExecute("/Error/{0}");
             }
 
             app.UseStaticFiles();

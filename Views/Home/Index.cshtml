@@ -9,16 +9,17 @@
 }
 
 
-<div class="card-deck" style="height:auto;display: flex; flex-wrap: wrap;">
+<div class="card-deck d-flex flex-wrap justify-content-between">
     @foreach (var item in Model)
     {
-        <div class="card border-primary mb-3 " style="width:24.2%;height:auto;border-radius:10px;margin:5px;">
+        <div class="card border-primary mb-3 " id="custom_media">
+
             <div class="card-header">
                 <h5 class="card-title">@item.Name</h5>
             </div>
-            <img class="card-img-top text-center" src="~/images/@item.ImagePath" style="max-width:350px;height:250px;" alt="Card image cap" asp-append-version="true">
-            <div class="card-footer text-sm-center">
-                <a class="btn btn-outline-info" asp-controller="home" asp-action="details" asp-route-id="@item.Id">Details</a>
+            <img class="card-img-top text-center" src="~/images/@item.ImagePath" id="custom_media_img" alt="Card image cap" asp-append-version="true">
+            <div class="card-footer d-flex justify-content-between text-sm-center">
+                <a class="btn  btn-outline-info" asp-controller="home" asp-action="details" asp-route-id="@item.Id">Details</a>
                 <a class="btn btn-outline-warning" asp-controller="home" asp-action="edit" asp-route-id="@item.Id">Edit</a>
                 <a class="btn btn-outline-danger">Delete</a>
             </div>

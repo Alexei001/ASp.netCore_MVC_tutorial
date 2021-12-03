@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ASp.netCore_empty_tutorial.ViewModels
 {
-    public class LoginViewModel
+    public class AccountLoginViewModel
     {
         [Required]
         [RegularExpression(@"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}", ErrorMessage = "Invalid Email Adress")]

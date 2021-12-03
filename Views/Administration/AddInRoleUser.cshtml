@@ -1,0 +1,32 @@
+﻿@model List<UserRoleAdministrationViewModel>;
+
+@{
+    ViewBag.Title = "Add User role"; 
+    var roleId = ViewBag.RoleId;
+}
+
+
+<form  method="post" >
+    <div class="card">
+        <div class="card-header">Add or remove from this role</div>
+        <div class="card-body">
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                
+                <div class="form-check m-1">
+                    <input type="hidden" asp-for="@Model[i].UserId" />
+                    <input type="hidden"  asp-for="@Model[i].UserName" />
+                    <input type="checkbox" asp-for="@Model[i].IsEnrole" class="form-check-input" />
+                    <label class="form-check-label"> @Model[i].UserName</label>
+                </div>
+            }
+        </div>
+        <div class="card-footer">
+            <input type="submit" class="btn btn-primary" value="Save" />
+            <a asp-controller="Administration" asp-action="Edit" asp-route-id="@roleId" class="btn btn-danger">Back</a>
+        </div>
+    </div>
+</form>
+
+
+

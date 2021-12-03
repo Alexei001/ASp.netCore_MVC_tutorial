@@ -1,0 +1,87 @@
+﻿@model EditUserAdministrationViewModel;
+
+@{
+    ViewBag.Title = "Edit User";
+}
+
+
+<div class="bg-light border border-primary" style="border-radius:10px;margin-bottom:10px;padding:10px;">
+    <h2 class="text-primary">Edit User</h2>
+    <form method="post" asp-controller="Administration" asp-action="EditUser">
+
+        <div class="mb-3">
+            <label asp-for="Id" class="form-label"></label>
+            <input asp-for="Id" class="form-control" disabled value="@Model.Id">
+            <span asp-validation-for="Id" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="UserName" class="form-label"></label>
+            <input asp-for="UserName" type="text" class="form-control" value="@Model.UserName" />
+            <span asp-validation-for="UserName" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Email" class="form-label"></label>
+            <input asp-for="Email" type="text" class="form-control" value="@Model.Email"/>
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="City" class="form-label"></label>
+            <input asp-for="City" type="text" class="form-control" value="@Model.City" />
+            <span asp-validation-for="City" class="text-danger"></span>
+        </div>
+
+        <div asp-validation-summary="All" class="text-danger"></div>
+
+        <a asp-controller="Administration" asp-action="GetUsers" class="btn btn-outline-danger fw-bold">
+            <i class="bi bi-arrow-left"></i>
+            Back
+        </a>
+        <button type="submit" class="btn btn-outline-primary fw-bold">
+            <i class="bi bi-save "></i>
+            Save
+        </button>
+    </form>
+</div>
+
+<div class="d-flex justify-content-center w-100">
+    <div class="card border border-primary w-50" style="border-radius:10px; margin-bottom:5px;">
+        <h5 class="card-header text-primary">Roles</h5>
+        <div class="card-body">
+            @if (Model.Roles.Any())
+            {
+                foreach (var user in Model.Roles)
+                {
+                    <h6 class="card-text">@user</h6>
+                }
+            }
+            else
+            {
+                <h6 class="card-text">No Roles</h6>
+            }
+            <a asp-controller="Administration" asp-action="GetRoles" class="btn btn-outline-primary fw-bold">
+                <i class="bi bi-plus-square-fill "></i>
+                Manage Roles
+            </a>
+        </div>
+    </div>
+    <div class="card border border-primary w-50" style="border-radius:10px;margin-bottom:5px;">
+        <h5 class="card-header text-primary">Claims</h5>
+        <div class="card-body">
+            @if (Model.Claims.Any())
+            {
+                foreach (var claim in Model.Claims)
+                {
+                    <h6 class="card-text">@claim</h6>
+                }
+            }
+            else
+            {
+                <h6 class="card-text">No Roles</h6>
+            }
+            <a href="#" class="btn btn-outline-primary fw-bold">
+                <i class="bi bi-plus-square-fill "></i>
+                Manage Claims
+            </a>
+        </div>
+    </div>
+</div>
