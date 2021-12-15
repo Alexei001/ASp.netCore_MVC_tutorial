@@ -1,4 +1,6 @@
 ﻿@model IEnumerable<IdentityRole>;
+@using Microsoft.AspNetCore.Authorization;
+@inject IAuthorizationService _authorizationService;
 
 @{
     ViewBag.title = "All Roles";
@@ -18,10 +20,14 @@
                 <p class="card-text">Lorem ipsun some text</p>
             </div>
             <div class="card-footer">
-                <a asp-controller="Administration" asp-action="EditRole" asp-route-id="@role.Id" class="btn btn-outline-primary fw-bold">
-                    <i class="bi bi-pencil-square"></i>
-                    Edit
-                </a>
+                @if ((await _authorizationService.AuthorizeAsync(User, "EditRolePolicy")).Succeeded)
+                {
+                    <a asp-controller="Administration" asp-action="EditRole" asp-route-id="@role.Id" class="btn btn-outline-primary fw-bold">
+                        <i class="bi bi-pencil-square"></i>
+                        Edit
+                    </a>
+                }
+
 
                 <form style="display:inline" asp-action="DeleteRole" asp-controller="Administration" asp-route-Id="@role.Id" method="post">
                     <span id="deleteButtonSpan_@role.Id">

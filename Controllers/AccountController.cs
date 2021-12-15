@@ -20,6 +20,7 @@ namespace ASp.netCore_empty_tutorial.Controllers
             this._userManager = userManager;
             this._signInManager = signInManager;
         }
+
         //logout action metod
         [HttpPost]
         public async Task<IActionResult> Logout()
@@ -35,6 +36,7 @@ namespace ASp.netCore_empty_tutorial.Controllers
         {
             return View();
         }
+
 
         [AcceptVerbs("Get", "Post")]
         [AllowAnonymous]
@@ -108,7 +110,7 @@ namespace ASp.netCore_empty_tutorial.Controllers
                 var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, false);
                 if (result.Succeeded)
                 {
-                    if (!string.IsNullOrEmpty(returnUrl)) //&& Url.IsLocalUrl(returnUrl))
+                    if (!string.IsNullOrEmpty(returnUrl)) 
                     {
                         return LocalRedirect(returnUrl);
                     }
@@ -123,11 +125,6 @@ namespace ASp.netCore_empty_tutorial.Controllers
             return View(model);
         }
 
-        [HttpGet]
-        [AllowAnonymous]
-        public IActionResult AccessDenied()
-        {
-            return View();
-        }
+        
     }
 }

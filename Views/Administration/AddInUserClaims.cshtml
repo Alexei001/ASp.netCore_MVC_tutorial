@@ -1,0 +1,32 @@
+﻿@model UserClaimsViewModel;
+
+
+@{
+    ViewBag.Title = "Add claims in User";
+    var userName = ViewBag.UserName;
+}
+
+<form asp-controller="Administration" asp-action="AddInUserClaims" method="post">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">Add claim for @userName</div>
+        </div>
+        <div class="card-body">
+            @for (int i = 0; i < Model.Claims.Count; i++)
+            {
+
+                <div class="form-check m-1">
+                    <input type="checkbox" asp-for="@Model.Claims[i].IsSelected" />
+                    <input type="hidden" asp-for="@Model.Claims[i].ClaimType" />
+                    <input type="hidden" asp-for="@Model.UserId" />
+                    <label class="form-check-label">@Model.Claims[i].ClaimType</label>
+                </div>
+            }
+
+        </div>
+        <div class="card-footer">
+            <input type="submit" value="Save" class="btn btn-outline-primary" />
+            <a class="btn btn-outline-danger" asp-controller="Administration" asp-action="EditUser" asp-route-Id="@Model.UserId">Back</a>
+        </div>
+    </div>
+</form>

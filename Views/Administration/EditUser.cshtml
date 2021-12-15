@@ -21,7 +21,7 @@
         </div>
         <div class="mb-3">
             <label asp-for="Email" class="form-label"></label>
-            <input asp-for="Email" type="text" class="form-control" value="@Model.Email"/>
+            <input asp-for="Email" type="text" class="form-control" value="@Model.Email" />
             <span asp-validation-for="Email" class="text-danger"></span>
         </div>
         <div class="mb-3">
@@ -58,7 +58,7 @@
             {
                 <h6 class="card-text">No Roles</h6>
             }
-            <a asp-controller="Administration" asp-action="GetRoles" class="btn btn-outline-primary fw-bold">
+            <a asp-controller="Administration" asp-action="AddInUserRoles" asp-route-userId="@Model.Id" class="btn btn-outline-primary fw-bold">
                 <i class="bi bi-plus-square-fill "></i>
                 Manage Roles
             </a>
@@ -76,9 +76,9 @@
             }
             else
             {
-                <h6 class="card-text">No Roles</h6>
+                <h6 class="card-text">No Claims</h6>
             }
-            <a href="#" class="btn btn-outline-primary fw-bold">
+            <a asp-controller="Administration" asp-action="AddInUserClaims" asp-route-userId="@Model.Id" class="btn btn-outline-primary fw-bold">
                 <i class="bi bi-plus-square-fill "></i>
                 Manage Claims
             </a>

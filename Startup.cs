@@ -38,7 +38,18 @@ namespace ASp.netCore_empty_tutorial
 
             }).AddEntityFrameworkStores<AppDbContext>();
 
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("DeleteRolePolicy", policy =>
+                 {
+                     policy.RequireClaim("Delete Role");
+                 });
+                options.AddPolicy("EditRolePolicy", policy =>
+                 {
+                     policy.RequireClaim("Edit Role");
+                 });
 
+            });
             services.AddMvc(options =>
             {
                 options.EnableEndpointRouting = false;
@@ -47,6 +58,10 @@ namespace ASp.netCore_empty_tutorial
                     .Build();
                 options.Filters.Add(new AuthorizeFilter(policy));
             }).AddXmlSerializerFormatters();
+            services.ConfigureApplicationCookie(options =>
+            {
+                options.AccessDeniedPath=new PathString("/Administration/AccessDenied");
+            });
             services.AddScoped<IEmployeeRepository, SQLEmployeeRepository>();
 
         }
@@ -61,20 +76,21 @@ namespace ASp.netCore_empty_tutorial
             }
             else
             {
-                // app.UseExceptionHandler("/Error");
-                // app.UseStatusCodePagesWithReExecute("/Error/{0}");
+                app.UseExceptionHandler("/Error");
+                app.UseStatusCodePagesWithReExecute("/Error/{0}");
             }
-
-            app.UseStaticFiles();
-
-
             app.UseAuthentication();
+            
+            app.UseStaticFiles();
             app.UseMvc(route =>
             {
                 route.MapRoute("default", "{controller=Home}/{action=Index}/{id?}");
             });
+
             //app.UseMvc();
             app.UseRouting();
+
+            //endpoints by default
             app.UseEndpoints(endpoints =>
             {
                 // обработка запроса - получаем констекст запроса в виде объекта context
