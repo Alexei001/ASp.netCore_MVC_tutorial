@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace ASp.netCore_empty_tutorial.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = "AdminRolePolicy")]
     public class AdministrationController : Controller
     {
         protected readonly RoleManager<IdentityRole> _roleManager;
@@ -209,7 +209,7 @@ namespace ASp.netCore_empty_tutorial.Controllers
                 };
                 var claims = await userManager.GetClaimsAsync(user);
                 var roles = await userManager.GetRolesAsync(user);
-                model.Claims = claims.Select(c => c.Value).ToList();
+                model.Claims = claims.Select(c => c.Type + ": " + c.Value).ToList();
                 foreach (var role in roles)
                 {
                     model.Roles.Add(role);
@@ -414,7 +414,7 @@ namespace ASp.netCore_empty_tutorial.Controllers
                 {
                     ClaimType = claim.Type
                 };
-                if (existingUserClaims.Any(ext => ext.Type == claim.Type))
+                if (existingUserClaims.Any(ext => ext.Type == claim.Type && ext.Value == "true"))
                 {
                     userClaim.IsSelected = true;
                 }
@@ -443,8 +443,8 @@ namespace ASp.netCore_empty_tutorial.Controllers
                 ModelState.AddModelError(string.Empty, $"Can't remove claims from user {user.UserName}");
                 return View(model);
             }
-            var filterclaims = model.Claims.Where(x => x.IsSelected);
-            var claims = filterclaims.Select(cl => new Claim(cl.ClaimType, cl.ClaimType));
+
+            var claims = model.Claims.Select(cl => new Claim(cl.ClaimType, cl.IsSelected ? "true" : "false"));
             result = await userManager.AddClaimsAsync(user, claims);
 
             if (!result.Succeeded)

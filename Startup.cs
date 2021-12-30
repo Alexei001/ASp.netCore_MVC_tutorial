@@ -46,8 +46,17 @@ namespace ASp.netCore_empty_tutorial
                  });
                 options.AddPolicy("EditRolePolicy", policy =>
                  {
-                     policy.RequireClaim("Edit Role");
+                     policy.RequireAssertion(context =>
+                         context.User.IsInRole("Admin") &&
+                         context.User.HasClaim("Edit Role", "true") ||
+                         context.User.IsInRole("Super Admin")
+                     );
                  });
+                options.AddPolicy("AdminRolePolicy", policy =>
+                  {
+                      policy.RequireRole("Admin");
+                      policy.RequireRole("Super Admin");
+                  });
 
             });
             services.AddMvc(options =>
@@ -60,7 +69,7 @@ namespace ASp.netCore_empty_tutorial
             }).AddXmlSerializerFormatters();
             services.ConfigureApplicationCookie(options =>
             {
-                options.AccessDeniedPath=new PathString("/Administration/AccessDenied");
+                options.AccessDeniedPath = new PathString("/Administration/AccessDenied");
             });
             services.AddScoped<IEmployeeRepository, SQLEmployeeRepository>();
 
@@ -80,10 +89,12 @@ namespace ASp.netCore_empty_tutorial
                 app.UseStatusCodePagesWithReExecute("/Error/{0}");
             }
             app.UseAuthentication();
-            
+
             app.UseStaticFiles();
             app.UseMvc(route =>
             {
+                
+                //route.MapRoute("default", "{controller=Account}/{Login}");
                 route.MapRoute("default", "{controller=Home}/{action=Index}/{id?}");
             });
 

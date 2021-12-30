@@ -30,7 +30,7 @@
                         <li class="nav-item">
                             <a asp-action="create" asp-controller="home" class="nav-link">Create</a>
                         </li>
-                        @if (signInManager.IsSignedIn(User) && (User.IsInRole("Admin")))
+                        @if ((signInManager.IsSignedIn(User) && (User.IsInRole("Admin")))|| (signInManager.IsSignedIn(User) && (User.IsInRole("Super Admin"))))
                         {
                             <li class="nav-item">
                                 <a asp-action="GetRoles" asp-controller="Administration" class="nav-link">Roles</a>
