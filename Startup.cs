@@ -8,7 +8,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using ASp.netCore_empty_tutorial.Security;
 
 namespace ASp.netCore_empty_tutorial
 {
@@ -46,16 +48,15 @@ namespace ASp.netCore_empty_tutorial
                  });
                 options.AddPolicy("EditRolePolicy", policy =>
                  {
-                     policy.RequireAssertion(context =>
-                         context.User.IsInRole("Admin") &&
-                         context.User.HasClaim("Edit Role", "true") ||
-                         context.User.IsInRole("Super Admin")
-                     );
+                     policy.AddRequirements(new ManageAdminRolesAndClaimsRequirement());
+
                  });
                 options.AddPolicy("AdminRolePolicy", policy =>
                   {
-                      policy.RequireRole("Admin");
-                      policy.RequireRole("Super Admin");
+                      policy.RequireAssertion(context =>
+                         context.User.IsInRole("Admin") ||
+                         context.User.IsInRole("Super Admin")
+                     );
                   });
 
             });
@@ -67,12 +68,21 @@ namespace ASp.netCore_empty_tutorial
                     .Build();
                 options.Filters.Add(new AuthorizeFilter(policy));
             }).AddXmlSerializerFormatters();
+
+            //Connect Google Autentication
+            services.AddAuthentication().AddGoogle(options =>
+            {
+                options.ClientId = "652435436708-5d73e7gkvb2an5fkv8uf921185ofmr5l.apps.googleusercontent.com";
+                options.ClientSecret = "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";
+            });
+
             services.ConfigureApplicationCookie(options =>
             {
                 options.AccessDeniedPath = new PathString("/Administration/AccessDenied");
             });
             services.AddScoped<IEmployeeRepository, SQLEmployeeRepository>();
-
+            services.AddSingleton<IAuthorizationHandler, CanEditOnlyOtherAdminRolesAndClaimsHandler>();
+            services.AddSingleton<IAuthorizationHandler, SuperAdminRoleHandler>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -93,7 +103,7 @@ namespace ASp.netCore_empty_tutorial
             app.UseStaticFiles();
             app.UseMvc(route =>
             {
-                
+
                 //route.MapRoute("default", "{controller=Account}/{Login}");
                 route.MapRoute("default", "{controller=Home}/{action=Index}/{id?}");
             });

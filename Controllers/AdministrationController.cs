@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 
 namespace ASp.netCore_empty_tutorial.Controllers
 {
+
     [Authorize(Policy = "AdminRolePolicy")]
     public class AdministrationController : Controller
     {
@@ -29,12 +30,17 @@ namespace ASp.netCore_empty_tutorial.Controllers
             this.logger = logger;
         }
 
+
+
+
         [HttpGet]
 
         public IActionResult CreateRole()
         {
             return View();
         }
+
+
 
         [HttpPost]
         public async Task<IActionResult> CreateRole(CreateRoleAdministrationViewModel model)
@@ -58,8 +64,9 @@ namespace ASp.netCore_empty_tutorial.Controllers
             }
             return View(model);
         }
+
+
         [HttpGet]
-        [Authorize(Policy = "EditRolePolicy")]
         public async Task<IActionResult> EditRole(string id)
         {
             IdentityRole role = await _roleManager.FindByIdAsync(id);
@@ -86,8 +93,8 @@ namespace ASp.netCore_empty_tutorial.Controllers
             return View(model);
 
         }
+
         [HttpPost]
-        [Authorize(Policy = "EditRolePolicy")]
         public async Task<IActionResult> EditRole(EditRoleAdministrationViewModel model)
         {
             var role = await _roleManager.FindByIdAsync(model.Id);
@@ -144,6 +151,8 @@ namespace ASp.netCore_empty_tutorial.Controllers
             }
 
         }
+
+
         [HttpGet]
         public IActionResult GetRoles()
         {
@@ -329,6 +338,7 @@ namespace ASp.netCore_empty_tutorial.Controllers
 
 
         [HttpGet]
+        
         public async Task<IActionResult> AddInUserRoles(string userId)
         {
             var user = await userManager.FindByIdAsync(userId);
@@ -364,12 +374,13 @@ namespace ASp.netCore_empty_tutorial.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "EditRolePolicy")]
         public async Task<IActionResult> AddInUserRoles(List<RoleUserAdministrationViewModel> models, string userId)
         {
             var user = await userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                ViewBag.ErrorMessage = $"This role id: {userId} can not be found";
+                ViewBag.ErrorMessage = $"This role id: {userId} can not be found"; 
                 return View("NotFound");
             }
 
