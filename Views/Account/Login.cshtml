@@ -4,8 +4,9 @@
     ViewBag.Title = "Login page";
 }
 
-<div style=" max-width: 100%; height: auto; display: flex; justify-content: center;">
-    <form asp-controller="Account" asp-action="Login" method="post" class="mt-3" style="width: 50%; border-radius: 5px; padding: 10px 10px; ">
+<div class="  d-flex flex-column justify-content-center align-content-center w-100 h-auto">
+
+    <form asp-controller="Account" asp-action="Login" method="post" class="mt-3 border" style="width: 50%; border-radius: 5px; padding: 10px 10px; ">
         <h2 class="card-title" style="margin-bottom:20px;">Log In</h2>
         <div asp-validation-summary="All" class="text-danger"></div>
         <div class="form-group row">
@@ -39,4 +40,28 @@
         </div>
 
     </form>
+
+    <div class="card w-50">
+        <div class="card-header"><h4>External Login Providers</h4></div>
+        @if (Model.ExternalLogins.Count == 0)
+        {<div class="card-body">
+                <h6 class="text-success">You don't have any providers yet!</h6>
+            </div>
+            <div class="card-footer"></div>
+        }
+        else
+        {<div class="card-footer">
+                <form method="post" asp-controller="Account" asp-action="ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl">
+                    @foreach (var provider in Model.ExternalLogins)
+                    {
+                        <button class="btn btn-primary"
+                                type="submit" name="provider" value="@provider.Name" title="Login using your @provider.DisplayName account">
+                            @provider.DisplayName
+                        </button>
+                    }
+                </form>
+            </div>
+        }
+    </div>
+
 </div>

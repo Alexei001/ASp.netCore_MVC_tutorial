@@ -69,12 +69,18 @@ namespace ASp.netCore_empty_tutorial
                 options.Filters.Add(new AuthorizeFilter(policy));
             }).AddXmlSerializerFormatters();
 
-            //Connect Google Autentication
-            services.AddAuthentication().AddGoogle(options =>
+            //Connect Google Autentication provider
+            services.AddAuthentication()
+                .AddGoogle(options =>
             {
                 options.ClientId = "652435436708-5d73e7gkvb2an5fkv8uf921185ofmr5l.apps.googleusercontent.com";
                 options.ClientSecret = "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";
-            });
+            })
+                .AddFacebook(options =>
+                {
+                    options.AppId = "875093133186683";
+                    options.AppSecret = "e3fd7a888462def37a0f2706c31cc215";
+                });
 
             services.ConfigureApplicationCookie(options =>
             {

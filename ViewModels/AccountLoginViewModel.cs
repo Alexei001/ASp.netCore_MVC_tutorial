@@ -20,7 +20,7 @@ namespace ASp.netCore_empty_tutorial.ViewModels
         [Display(Name = "Remember Me")]
         public bool RememberMe { get; set; }
 
-        public bool ReturnUrl { get; set; }
+        public string ReturnUrl { get; set; }
 
         public IList<AuthenticationScheme> ExternalLogins { get; set; }
     }
