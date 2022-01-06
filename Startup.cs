@@ -37,8 +37,11 @@ namespace ASp.netCore_empty_tutorial
                 //configure password input points
                 options.Password.RequiredLength = 10;
                 options.Password.RequiredUniqueChars = 3;
+                options.SignIn.RequireConfirmedEmail = true;
 
-            }).AddEntityFrameworkStores<AppDbContext>();
+            }).AddEntityFrameworkStores<AppDbContext>()
+            //token provider for genaration token for email confirmed
+              .AddDefaultTokenProviders();
 
             services.AddAuthorization(options =>
             {

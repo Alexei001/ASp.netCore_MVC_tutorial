@@ -3,6 +3,7 @@ using ASp.netCore_empty_tutorial.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,10 +17,16 @@ namespace ASp.netCore_empty_tutorial.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
 
-        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
+        private readonly ILogger<AccountController> logger;
+
+        public AccountController(UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager,
+             ILogger<AccountController> logger)
         {
             this._userManager = userManager;
             this._signInManager = signInManager;
+
+            this.logger = logger;
         }
 
         //logout action metod
@@ -30,13 +37,7 @@ namespace ASp.netCore_empty_tutorial.Controllers
             return RedirectToAction("index", "home");
         }
 
-        //register action metod
-        [HttpGet]
-        [AllowAnonymous]
-        public IActionResult Register()
-        {
-            return View();
-        }
+
 
 
         [AcceptVerbs("Get", "Post")]
@@ -53,7 +54,13 @@ namespace ASp.netCore_empty_tutorial.Controllers
                 return Json($"Email {email} is already use ");
             }
         }
-
+        //register action metod
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult Register()
+        {
+            return View();
+        }
 
         [HttpPost]
         [AllowAnonymous]
@@ -71,18 +78,24 @@ namespace ASp.netCore_empty_tutorial.Controllers
 
                 var result = await _userManager.CreateAsync(user, model.Password);
 
+
                 if (result.Succeeded)
                 {
+                    var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    var confirmLink = Url.Action("EmailConfirm", "Account", new { userId = user.Id, token = token }, Request.Scheme);
+                    var fulPath = $"https://localhost:44389{confirmLink}";
+                    //code for sending confirmLink
+                    var emailsend = new EmailSend();
+                    emailsend.EmailConfirm(fulPath, user.UserName, user.Email);
+                    //...
+
                     if (_signInManager.IsSignedIn(User) && (User.IsInRole("Admin")))
                     {
                         return RedirectToAction("GetUsers", "Administration");
                     }
-                    else
-                    {
-                        await _signInManager.SignInAsync(user, isPersistent: true);
-                        return RedirectToAction("Index", "Home");
-                    }
-
+                    ViewBag.ErrorTitle = "Email not confirmed yest!";
+                    ViewBag.ErrorMessage = $"For succesful registrarion you need to confirm email! pleas check your email: {user.Email}";
+                    return View("Error");
                 }
 
                 foreach (var error in result.Errors)
@@ -91,7 +104,27 @@ namespace ASp.netCore_empty_tutorial.Controllers
                 }
             }
 
-            return View();
+            return View(model);
+        }
+
+        [AllowAnonymous]
+        public async Task<IActionResult> EmailConfirm(string userId, string token)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                ViewBag.ErrorMessage = $"User: {user.Email} not found, null references";
+                return View("NotFound");
+            }
+
+            if (user != null && token != null)
+            {
+                await _userManager.ConfirmEmailAsync(user, token);
+                return View();
+            }
+            ViewBag.ErrorTitle = "Token null exception!";
+            ViewBag.ErrorMessage = $"Invalid Token";
+            return View("Error");
         }
 
 
@@ -111,8 +144,17 @@ namespace ASp.netCore_empty_tutorial.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Login(AccountLoginViewModel model, string returnUrl)
         {
+            model.ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+
             if (ModelState.IsValid)
             {
+                var user = await _userManager.FindByEmailAsync(model.Email);
+                if (user != null && !(await _userManager.IsEmailConfirmedAsync(user)) && (await _userManager.CheckPasswordAsync(user, model.Password)))
+                {
+                    ModelState.AddModelError(string.Empty, "Email not confirmed yet");
+                    return View(model);
+                }
+
                 var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, false);
                 if (result.Succeeded)
                 {
@@ -146,7 +188,7 @@ namespace ASp.netCore_empty_tutorial.Controllers
         public async Task<IActionResult> ExternalLoginCallBack(string returnUrl = null, string remoteError = null)
         {
             returnUrl = returnUrl ?? Url.Content("~/");
-            AccountLoginViewModel model = new AccountLoginViewModel()
+            AccountLoginViewModel accountmodel = new AccountLoginViewModel()
             {
                 ReturnUrl = returnUrl,
                 ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList()
@@ -156,15 +198,17 @@ namespace ASp.netCore_empty_tutorial.Controllers
             if (remoteError != null)
             {
                 ModelState.AddModelError(string.Empty, $"We have a error from provider: {remoteError}");
-                return View("Login", model);
+                return View("Login", accountmodel);
             }
 
             var info = await _signInManager.GetExternalLoginInfoAsync();
             if (info == null)
             {
                 ModelState.AddModelError(string.Empty, "We have a error with info provider");
-                return View("Login", model);
+                return View("Login", accountmodel);
             }
+
+            //check if the user with this provider exists
 
             var signInresult = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: true, bypassTwoFactor: true);
             if (signInresult.Succeeded)
@@ -176,21 +220,31 @@ namespace ASp.netCore_empty_tutorial.Controllers
             if (email != null)
             {
                 var user = await _userManager.FindByEmailAsync(email);
-                if (user == null)
+                if (user != null && !user.EmailConfirmed)
                 {
-                    user = new ApplicationUser()
-                    {
-                        Email = info.Principal.FindFirstValue(ClaimTypes.Email),
-                        UserName = info.Principal.FindFirstValue(ClaimTypes.Email)
-                    };
+                    ModelState.AddModelError(string.Empty, "Email not confirmed yet!");
+                    return View("Login", accountmodel);
+                }
+                var model = new ApplicationUser()
+                {
+                    Email = email,
+                    UserName = email
+                };
 
-                    await _userManager.CreateAsync(user);
+                await _userManager.CreateAsync(model);
+                await _userManager.AddLoginAsync(model, info);
+                if (!(await _userManager.IsEmailConfirmedAsync(model)))
+                {
+                    var token = await _userManager.GenerateEmailConfirmationTokenAsync(model);
+                    var confimLink = Url.Action("EmailConfirm", "Account", new { userId = model.Id, token = token }, Request.Scheme);
+
+                    logger.Log(LogLevel.Warning, confimLink);
+                    ViewBag.ErrorTitle = "Registration Succesful";
+                    ViewBag.ErrorMessage = $"Before login, eou need to confirm email!";
+                    return View("Error");
                 }
 
 
-                await _userManager.AddLoginAsync(user, info);
-                await _signInManager.SignInAsync(user, isPersistent: false);
-                return LocalRedirect(returnUrl);
             }
 
             ViewBag.ErrorTitle = $"Email claim not received from {info.LoginProvider}";

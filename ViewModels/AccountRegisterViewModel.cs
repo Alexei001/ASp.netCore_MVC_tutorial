@@ -13,7 +13,7 @@ namespace ASp.netCore_empty_tutorial.ViewModels
         [Required]
         [RegularExpression(@"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}", ErrorMessage = "Invalid Email Adress")]
         [Remote(action:"IsEmailInUse",controller:"Account")]
-        [ValidationEmailDomain(validationDomain:"gmail.com",ErrorMessage ="The email must be Gmail.com")]
+        //[ValidationEmailDomain(validationDomain:"gmail.com",ErrorMessage ="The email must be Gmail.com")]
         public string Email { get; set; }
 
         [Required]
