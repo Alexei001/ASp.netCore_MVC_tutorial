@@ -146,6 +146,7 @@ namespace ASp.netCore_empty_tutorial.Controllers
         {
             model.ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
+
             if (ModelState.IsValid)
             {
                 var user = await _userManager.FindByEmailAsync(model.Email);
@@ -250,6 +251,75 @@ namespace ASp.netCore_empty_tutorial.Controllers
             ViewBag.ErrorTitle = $"Email claim not received from {info.LoginProvider}";
             ViewBag.ErrorMessage = "pleas contact suport SuportEmail@.com";
             return View("Error");
+        }
+
+
+        //forgot passwprd functionality
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _userManager.FindByEmailAsync(model.Email);
+                if (user != null && await _userManager.IsEmailConfirmedAsync(user))
+                {
+                    var genToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+                    var resetLink = Url.Action("ResetPassword", "Account", new { Email = user.Email, token = genToken }, Request.Scheme);
+                    logger.Log(LogLevel.Warning, resetLink);
+
+                    return View("ForgotPasswordConfirmation");
+                }
+                ModelState.AddModelError(string.Empty, "Invalid Email Adress");
+                return View(model);
+            }
+            return View(model);
+        }
+
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult ResetPassword(string Email, string token)
+        {
+            if (token == null || Email == null)
+            {
+                ModelState.AddModelError(string.Empty, "Invalid reset token or email adress");
+
+            }
+            return View();
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _userManager.FindByNameAsync(model.Email);
+                if (user != null)
+                {
+                    var result = await _userManager.ResetPasswordAsync(user, model.token, model.NewPassword);
+                    if (result.Succeeded)
+                    {
+                        return View("ResetPasswordSucces");
+                    }
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                    return View(model);
+                }
+                ModelState.AddModelError(string.Empty, "Invalid user!");
+                return View(model);
+            }
+            return View(model);
         }
     }
 }

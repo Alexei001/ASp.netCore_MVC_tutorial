@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using ASp.netCore_empty_tutorial.Security;
+using System;
 
 namespace ASp.netCore_empty_tutorial
 {
@@ -38,11 +39,31 @@ namespace ASp.netCore_empty_tutorial
                 options.Password.RequiredLength = 10;
                 options.Password.RequiredUniqueChars = 3;
                 options.SignIn.RequireConfirmedEmail = true;
+                //connect customEmailConfirmationToken
+                options.Tokens.EmailConfirmationTokenProvider = "CustomEmailConfirmation";
 
             }).AddEntityFrameworkStores<AppDbContext>()
             //token provider for genaration token for email confirmed
-              .AddDefaultTokenProviders();
+              .AddDefaultTokenProviders()
+            //add custom token provider for email confirmation
+            .AddTokenProvider<CustomEmailConfirmationTokenProvider<ApplicationUser>>("CustomEmailConfirmation");
 
+
+            //Token Settings Options
+            //for all token lifetime 5h
+            services.Configure<DataProtectionTokenProviderOptions>(options =>
+            {
+                options.TokenLifespan = TimeSpan.FromHours(5);
+
+            });
+            //for only email confirmation token lifetime 3 days
+            services.Configure<CustomEmailConfirmationTokenProviderOptions>(options =>
+            {
+                options.TokenLifespan = TimeSpan.FromDays(3);
+            });
+
+
+            //Add Authrization policy
             services.AddAuthorization(options =>
             {
                 options.AddPolicy("DeleteRolePolicy", policy =>
@@ -85,12 +106,16 @@ namespace ASp.netCore_empty_tutorial
                     options.AppSecret = "e3fd7a888462def37a0f2706c31cc215";
                 });
 
+
             services.ConfigureApplicationCookie(options =>
             {
                 options.AccessDeniedPath = new PathString("/Administration/AccessDenied");
             });
+            //connect  Dependency Injection for dbContext for sql data
             services.AddScoped<IEmployeeRepository, SQLEmployeeRepository>();
+            //connect policy Handler for ManageAdminRolesAndClaimsRequirement class
             services.AddSingleton<IAuthorizationHandler, CanEditOnlyOtherAdminRolesAndClaimsHandler>();
+
             services.AddSingleton<IAuthorizationHandler, SuperAdminRoleHandler>();
         }
 
