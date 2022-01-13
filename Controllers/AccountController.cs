@@ -154,7 +154,7 @@ namespace ASp.netCore_empty_tutorial.Controllers
                     return View(model);
                 }
 
-                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, false);
+                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, true);
                 if (result.Succeeded)
                 {
                     if (!string.IsNullOrEmpty(returnUrl))
@@ -166,6 +166,10 @@ namespace ASp.netCore_empty_tutorial.Controllers
                         return RedirectToAction("index", "home");
                     }
 
+                }
+                if (result.IsLockedOut)
+                {
+                    return View("AccountLocked");
                 }
                 ModelState.AddModelError(string.Empty, "Invalid Login Attempt");
             }
@@ -306,6 +310,10 @@ namespace ASp.netCore_empty_tutorial.Controllers
                     var result = await _userManager.ResetPasswordAsync(user, model.token, model.NewPassword);
                     if (result.Succeeded)
                     {
+                        if (await _userManager.IsLockedOutAsync(user))
+                        {
+                            await _userManager.SetLockoutEndDateAsync(user, System.DateTimeOffset.UtcNow);
+                        }
                         return View("ResetPasswordSucces");
                     }
                     foreach (var error in result.Errors)

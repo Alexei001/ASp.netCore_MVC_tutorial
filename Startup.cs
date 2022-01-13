@@ -42,6 +42,9 @@ namespace ASp.netCore_empty_tutorial
                 //connect customEmailConfirmationToken
                 options.Tokens.EmailConfirmationTokenProvider = "CustomEmailConfirmation";
 
+                options.Lockout.MaxFailedAccessAttempts = 5;
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+
             }).AddEntityFrameworkStores<AppDbContext>()
             //token provider for genaration token for email confirmed
               .AddDefaultTokenProviders()
