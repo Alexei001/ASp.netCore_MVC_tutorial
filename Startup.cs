@@ -117,6 +117,9 @@ namespace ASp.netCore_empty_tutorial
             services.AddSingleton<IAuthorizationHandler, CanEditOnlyOtherAdminRolesAndClaimsHandler>();
 
             services.AddSingleton<IAuthorizationHandler, SuperAdminRoleHandler>();
+
+            //connect encrypting and decripting ID for employee
+            services.AddSingleton<DataProtectionPurposeStrings>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

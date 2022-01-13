@@ -76,6 +76,7 @@ namespace ASp.netCore_empty_tutorial.Models
             {
                 _appContext.Employees.Remove(deletedEmploye_item);
                 _appContext.SaveChanges();
+
             }
             return deletedEmploye_item;
         }

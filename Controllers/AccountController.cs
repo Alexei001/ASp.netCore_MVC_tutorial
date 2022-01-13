@@ -1,11 +1,12 @@
 ﻿using ASp.netCore_empty_tutorial.Models;
+
 using ASp.netCore_empty_tutorial.ViewModels;
 using Microsoft.AspNetCore.Authorization;
+
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
+
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -16,16 +17,13 @@ namespace ASp.netCore_empty_tutorial.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
-
         private readonly ILogger<AccountController> logger;
 
         public AccountController(UserManager<ApplicationUser> userManager,
-            SignInManager<ApplicationUser> signInManager,
-             ILogger<AccountController> logger)
+            SignInManager<ApplicationUser> signInManager, ILogger<AccountController> logger)
         {
-            this._userManager = userManager;
-            this._signInManager = signInManager;
-
+            _userManager = userManager;
+            _signInManager = signInManager;
             this.logger = logger;
         }
 
@@ -314,12 +312,89 @@ namespace ASp.netCore_empty_tutorial.Controllers
                     {
                         ModelState.AddModelError(string.Empty, error.Description);
                     }
-                    return View(model);
+                    return View();
                 }
                 ModelState.AddModelError(string.Empty, "Invalid user!");
                 return View(model);
             }
             return View(model);
+        }
+
+        //Change User Password Action Method
+        [HttpGet]
+        public async Task<IActionResult> ChangePassword()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var userHasPassword = await _userManager.HasPasswordAsync(user);
+            if (!userHasPassword)
+            {
+                return RedirectToAction("AddPassword");
+            }
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                {
+                    return RedirectToAction("Login");
+                }
+                var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.Password);
+                if (result.Succeeded)
+                {
+                    await _signInManager.RefreshSignInAsync(user);
+
+                    ViewBag.Message = User.Identity.Name;
+                    return View("SuccesChangePassword");
+                }
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+
+                }
+                return View();
+            }
+            return View(model);
+
+        }
+
+        //add local password for external user authentication, Google or Facebook
+
+        [HttpGet]
+        public async Task<IActionResult> AddPassword()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var userHasPassword = await _userManager.HasPasswordAsync(user);
+            if (userHasPassword)
+            {
+                return RedirectToAction("ChangePassword");
+            }
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> AddPassword(AddPasswordViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _userManager.GetUserAsync(User);
+                var result = await _userManager.AddPasswordAsync(user, model.Password);
+                if (result.Succeeded)
+                {
+                    await _signInManager.RefreshSignInAsync(user);
+                    return View("AddPasswordConfirmation");
+                }
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+                return View();
+            }
+            return View(model);
+
         }
     }
 }

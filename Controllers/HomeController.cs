@@ -8,33 +8,41 @@ using System.IO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
+using ASp.netCore_empty_tutorial.Security;
+using System.Linq;
 
 namespace ASp.netCore_empty_tutorial.Controllers
 {
-    
+
     public class HomeController : Controller
     {
         private readonly IEmployeeRepository _employeeRepository;
         private readonly IHostEnvironment _hostEnvironment;
         private readonly ILogger logger;
-
-        public HomeController(IEmployeeRepository employeeRepository, IHostEnvironment hostEnvironment, ILogger<HomeController> logger)
+        private readonly IDataProtector _protector;
+        public HomeController(IEmployeeRepository employeeRepository, IHostEnvironment hostEnvironment, ILogger<HomeController> logger,
+            IDataProtectionProvider dataProtectionProvider, DataProtectionPurposeStrings dataProtectionPurposeStrings)
         {
-
+            _protector = dataProtectionProvider.CreateProtector(dataProtectionPurposeStrings.EmployeeIdRouteValue);
             _employeeRepository = employeeRepository;
-            this._hostEnvironment = hostEnvironment;
+            _hostEnvironment = hostEnvironment;
             this.logger = logger;
         }
 
         [AllowAnonymous]
         public ViewResult Index()
         {
-            IEnumerable<Employee> allData = _employeeRepository.GetEmployees();
-            return View(allData);
+            var model = _employeeRepository.GetEmployees().Select(e =>
+            {
+                e.EncryptedId = _protector.Protect(e.Id.ToString());
+                return e;
+            });
+            return View(model);
         }
 
         [AllowAnonymous]
-        public ViewResult Details(int? id)
+        public ViewResult Details(string id)
         {
             //Logging information
             logger.LogTrace("Log Trace");
@@ -43,13 +51,14 @@ namespace ASp.netCore_empty_tutorial.Controllers
             logger.LogWarning("Log Warning");
             logger.LogError("Log Error");
             logger.LogCritical("Log Critical");
+            int decryptedEmployeeId = Convert.ToInt32(_protector.Unprotect(id));
 
-            Employee detailsById = _employeeRepository.GetEmployeeById(id.Value);
+            Employee detailsById = _employeeRepository.GetEmployeeById(decryptedEmployeeId);
 
             if (detailsById == null)
             {
                 Response.StatusCode = 404;
-                return View("EmployeeNotFound", id.Value);
+                return View("EmployeeNotFound", decryptedEmployeeId);
             }
             return View(detailsById);
         }
@@ -75,15 +84,16 @@ namespace ASp.netCore_empty_tutorial.Controllers
                     ImagePath = uniqueFileName
                 };
                 _employeeRepository.Create(newEmployee);
-                return RedirectToAction("Details", new { id = newEmployee.Id });
+                return RedirectToAction("Index");
             }
             return View();
         }
         [HttpGet]
 
-        public ViewResult Edit(int id)
+        public ViewResult Edit(string id)
         {
-            Employee employee = _employeeRepository.GetEmployeeById(id);
+            int decryptedId = Convert.ToInt32(_protector.Unprotect(id));
+            Employee employee = _employeeRepository.GetEmployeeById(decryptedId);
 
             EmployeeEditViewModel employeeEditViewModel = new EmployeeEditViewModel
             {
@@ -96,8 +106,8 @@ namespace ASp.netCore_empty_tutorial.Controllers
 
             return View(employeeEditViewModel);
         }
-        [HttpPost]
 
+        [HttpPost]
         public IActionResult Edit(EmployeeEditViewModel model)
         {
             if (ModelState.IsValid)
@@ -143,6 +153,21 @@ namespace ASp.netCore_empty_tutorial.Controllers
             }
 
             return uniqueFileName;
+        }
+
+        //delete
+        [AllowAnonymous]
+        public IActionResult Delete(string id)
+        {
+            int decryptedId = Convert.ToInt32(_protector.Unprotect(id));
+
+            var result = _employeeRepository.Delete(decryptedId);
+            if (result != null)
+            {
+                ViewBag.Message = result.Name;
+                return View("SuccesAction");
+            }
+            return RedirectToAction("Index");
         }
     }
 }
